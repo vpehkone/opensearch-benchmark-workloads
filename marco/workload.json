@@ -1,0 +1,33 @@
+{% import "benchmark.helpers" as benchmark with context %}
+
+{
+  "version": 2,
+  "description": "Marco",
+  "indices": [
+    {
+      "name": "marco",
+      "body": "index.json"
+    }
+  ],
+  "corpora": [
+    {
+      "name": "marco",
+      "base-url": "http://localhost/",
+      "documents": [
+        {
+          "source-file": "documents.json.bz2",
+          "#COMMENT": "ML benchmark rely on the fact that the document count stays constant.",
+          "document-count": 1,
+          "compressed-bytes": 63,
+          "uncompressed-bytes": 28
+        }
+      ]
+    }
+  ],
+  "operations": [
+    {{ benchmark.collect(parts="operations/*.json") }}
+  ],
+  "test_procedures": [
+    {{ benchmark.collect(parts="test_procedures/*.json") }}
+  ]
+}

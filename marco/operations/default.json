@@ -1,0 +1,46 @@
+    {
+      "name": "index-append",
+      "operation-type": "bulk",
+      "bulk-size": {{bulk_size | default(10000)}},
+      "ingest-percentage": {{ingest_percentage | default(100)}}
+    },
+    {
+      "name": "wait-until-merges-finish",
+      "operation-type": "index-stats",
+      "index": "_all",
+      "condition": {
+        "path": "_all.total.merges.current",
+        "expected-value": 0
+      },
+      "retry-until-success": true,
+      "include-in-reporting": false
+    },
+    {
+      "name": "default",
+      "operation-type": "search",
+      "body": {
+        "query": {
+          "match_all": {}
+        }
+      }
+    },
+    {
+      "name": "semantic-search",
+      "operation-type": "search",
+      "body": {
+        "_source": {
+          "excludes": [
+            "passage_embedding"
+          ]
+        },
+        "query": {
+          "neural": {
+            "passage_embedding": {
+              "query_text": "wild west",
+              "model_id": "$model_id",
+              "k": 5
+            }
+          }
+        }
+      }
+    }
