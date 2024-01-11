@@ -58,7 +58,7 @@
           "warmup-iterations": 50,
           "iterations": 100
           {%- if not target_throughput %}
-          ,"target-throughput": 'none'
+          ,"target-throughput": none
           {%- elif target_throughput is string and target_throughput.lower() == 'none' %}
           {%- else %}
           ,"target-throughput": {{ target_throughput | tojson }}
