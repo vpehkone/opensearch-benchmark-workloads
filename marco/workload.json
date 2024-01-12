@@ -12,14 +12,14 @@
   "corpora": [
     {
       "name": "marco",
-      "base-url": "http://localhost/",
+      "base-url": "http://localhost",
       "documents": [
         {
           "source-file": "documents.json.bz2",
           "#COMMENT": "ML benchmark rely on the fact that the document count stays constant.",
-          "document-count": 1,
-          "compressed-bytes": 63,
-          "uncompressed-bytes": 28
+          "document-count": 1000,
+          "compressed-bytes": 96841,
+          "uncompressed-bytes": 326724
         }
       ]
     }

@@ -4,25 +4,6 @@
       "default": true,
       "schedule": [
         {
-          "operation": "delete-index"
-        },
-        {
-          "operation": {
-            "operation-type": "put-settings",
-            "body": {
-              "persistent": {
-                "plugins": {
-                  "ml_commons": {
-                    "only_run_on_ml_node": "false",
-                    "model_access_control_enabled": "true",
-                    "native_memory_threshold": "99"
-                  }
-                }
-              }
-            }
-          }
-        },     
-        {
           "operation": {
             "operation-type": "create-index",
             "settings": {%- if index_settings is defined %} {{index_settings | tojson}} {%- else %} {
