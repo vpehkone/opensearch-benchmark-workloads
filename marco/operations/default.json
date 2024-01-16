@@ -36,8 +36,8 @@
         "query": {
           "neural": {
             "passage_embedding": {
-              "query_text": "wild west",
-              "model_id": "$model_id",
+              "query_text": "what is prescribed to treat thyroid storm",
+              "model_id": {{ model_id }},
               "k": 5
             }
           }
