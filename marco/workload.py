@@ -18,7 +18,7 @@ def random_query(workload, params, **kwargs):
     type_name = params.get("type", default_type)
     model_id = params.get("model_id", None)
     script_dir=os.path.dirname(os.path.realpath(__file__))
-    random_query = random.choice(open(script_dir + '/queries.tmp').readlines())
+    random_query = random.choice(open(script_dir + '/queries.txt').readlines())
 
     return {
         "body": {
