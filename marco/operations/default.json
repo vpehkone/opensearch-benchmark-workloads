@@ -1,7 +1,7 @@
     {
       "name": "index-append",
       "operation-type": "bulk",
-      "bulk-size": {{bulk_size | default(1)}},
+      "bulk-size": {{bulk_size | default(1000)}},
       "ingest-percentage": {{ingest_percentage | default(100)}}
     },
     {
@@ -36,11 +36,17 @@
         "query": {
           "neural": {
             "passage_embedding": {
-              "query_text": "what is prescribed to treat thyroid storm",
+              "query_text": "which foods and the amounts would you need to eat if you wanted to consume your dri for calcium",
               "model_id": "{{ model_id }}",
               "k": 5
             }
           }
         }
       }
+    },
+    {
+      "name": "semantic-search-random",
+      "operation-type": "search",
+      "param-source": "semantic-search-random-source",
+      "model_id": "{{ model_id }}"
     }
