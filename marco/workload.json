@@ -21,6 +21,13 @@
           "compressed-bytes": 992998188,
           "uncompressed-bytes": 3203032612
         }
+      ],
+      "queries": [
+        {
+          "source-file": "queries.json.bz2",
+          "compressed-bytes": 4012,
+          "uncompressed-bytes": 9804
+        }
       ]
     }
   ],
