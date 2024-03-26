@@ -64,20 +64,27 @@ class DeleteMlModel(Runner):
 class RegisterMlModel(Runner):
     @time_func
     async def __call__(self, opensearch, params):
-        model_name = params.get('model_name')
-        model_version = params.get('model_version')
-        model_format = params.get('model_format')
-        body = {
+        config_file = params.get('model_config_file')
+        if config_file:
+            with open(config_file, 'r') as f:
+                body = json.loads(f.read())
+        else:
+            body = {
+                "name": params.get('model_name'),
+                "version": params.get('model_version'),
+                "model_format": params.get('model_format')
+            }
+        search_body = {
             "query": {
                 "match": {
-                    "name": model_name
+                    "name": body['name']
                 }
             },
             "size": 1000
         }
         model_id = None
         try:
-            resp = await opensearch.transport.perform_request('POST', '/_plugins/_ml/models/_search', body=body)
+            resp = await opensearch.transport.perform_request('POST', '/_plugins/_ml/models/_search', body=search_body)
             for item in resp['hits']['hits']:
                 doc = item.get('_source')
                 if doc:
@@ -88,11 +95,7 @@ class RegisterMlModel(Runner):
             pass
 
         if not model_id:
-            body = {
-                "name": model_name,
-                "version": model_version,
-                "model_format": model_format
-            }
+            #print(json.dumps(body, indent=2))
             resp = await opensearch.transport.perform_request('POST', '_plugins/_ml/models/_register', body=body)
             task_id = resp.get('task_id')
             timeout = 120
@@ -103,11 +106,10 @@ class RegisterMlModel(Runner):
                 resp = await opensearch.transport.perform_request('GET', '_plugins/_ml/tasks/' + task_id)
                 state = resp.get('state')
             if state == 'FAILED':
-                raise BenchmarkError("Failed to register ml-model. Model name: {} version: {} model_format: {}".format(
-                    body['name'], body['version'], body['model_format']))
+                #print(json.dumps(resp, indent=2))
+                raise BenchmarkError("Failed to register ml-model. Error: {}".format(resp['error']))
             if state == 'CREATED':
-                raise BenchmarkError("Timeout when registering ml-model. Model name: {} version: {} model_format: {}".format(
-                    body['name'], body['version'], body['model_format']))
+                raise BenchmarkError("Timeout when registering ml-model. Error: {}".format(resp['error']))
             model_id = resp.get('model_id')
 
         with open('model_id.json', 'w') as f:
@@ -135,9 +137,9 @@ class DeployMlModel(Runner):
             resp = await opensearch.transport.perform_request('GET', '_plugins/_ml/tasks/' + task_id)
             state = resp.get('state')
         if state == 'FAILED':
-            raise BenchmarkError("Failed to deploy ml-model. Model_id: {}".format(model_id))
+            raise BenchmarkError("Failed to deploy ml-model. Error: {}".format(resp['error']))
         if state == 'RUNNING':
-            raise BenchmarkError("Timeout when deploying ml-model. Model_id: {}".format(model_id))
+            raise BenchmarkError("Timeout when deploying ml-model. Error: {}".format(resp['error']))
 
     def __repr__(self, *args, **kwargs):
         return "deploy-ml-model"

@@ -12,8 +12,9 @@
                 "plugins": {
                   "ml_commons": {
                     "only_run_on_ml_node": "false",
-                    "model_access_control_enabled": "false",
-                    "native_memory_threshold": "99"
+                    "native_memory_threshold": "99",
+                    "allow_registering_model_via_local_file": "true",
+                    "allow_registering_model_via_url": "true"
                   }
                 }
               }
@@ -44,6 +45,7 @@
             "model_name": "{{ model_name | default('huggingface/sentence-transformers/all-mpnet-base-v2')}}",
             "model_version": "{{ model_version | default('1.0.1') }}",
             "model_format": "{{ model_format | default('TORCH_SCRIPT') }}",
+            "model_config_file": "{{ model_config_file | default('') }}",
             "include-in-results_publishing": false
           }
         },
