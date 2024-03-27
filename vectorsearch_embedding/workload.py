@@ -199,11 +199,9 @@ class QueryParamSource:
         if count > 0:
             script_dir = os.path.dirname(os.path.realpath(__file__))
             with open(script_dir + '/queries.json', 'r') as f:
-                d = json.loads(f.read())
-                queries = d['queries']
-                count = min(count, len(queries))
-                queries = queries[0:count]
-                query_text = random.choice(queries)
+                lines = f.read().splitlines()
+                line =random.choice(lines)
+                query_text = json.loads(line)['text']
                 params['body']['query']['neural']['passage_embedding']['query_text'] = query_text
         return params
 

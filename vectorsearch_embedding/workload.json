@@ -16,9 +16,9 @@
       "documents": [
         {
           "source-file": "documents.json.bz2",
-          "document-count": 8841325,
-          "compressed-bytes": 992998188,
-          "uncompressed-bytes": 3203032612
+          "document-count": 129192,
+          "compressed-bytes": 51187469,
+          "uncompressed-bytes": 211980208
         }
       ]
     }
