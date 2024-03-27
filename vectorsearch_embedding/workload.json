@@ -2,17 +2,17 @@
 
 {
   "version": 2,
-  "description": "MS MARCO is a collection of datasets focused on deep learning in search",
+    "description": "Trec-Covid is a dataset collection of documents about COVID-19 information.",
   "indices": [
     {
-      "name": "msmarco",
+      "name": "treccovid",
       "body": "index.json"
     }
   ],
   "corpora": [
     {
-      "name": "msmarco",
-      "base-url": "https://vesa-oswl.s3.us-west-2.amazonaws.com",
+      "name": "treccovid",
+      "base-url": "https://vesa-oswl.s3.us-west-2.amazonaws.com/treccovid",
       "documents": [
         {
           "source-file": "documents.json.bz2",
