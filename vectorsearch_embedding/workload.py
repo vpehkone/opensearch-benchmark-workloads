@@ -1,148 +1,13 @@
 import random
 import os
 import json
-import asyncio
-import time
-import traceback
 from pathlib import Path
 
 from osbenchmark.workload.loader import Downloader
 from osbenchmark.workload.loader import Decompressor
 from osbenchmark.workload.loader import Decompressor
-from osbenchmark.worker_coordinator.runner import Runner
-from osbenchmark.worker_coordinator.runner import time_func
-from osbenchmark.exceptions import BenchmarkError
 
 script_dir = os.path.dirname(os.path.realpath(__file__))
-
-class DeleteIngestPipeline(Runner):
-    @time_func
-    async def __call__(self, opensearch, params):
-        try:
-            resp = await opensearch.ingest.delete_pipeline(id ='nlp-ingest-pipeline')
-        except:
-            # no current pipeline
-            pass
-
-    def __repr__(self, *args, **kwargs):
-        return "delete-ingest-pipeline"
-
-class DeleteMlModel(Runner):
-    @time_func
-    async def __call__(self, opensearch, params):
-        body= {
-            "query": {
-                "match_phrase": {
-                    "name": {
-                        "query": params.get('model_name')
-                    }
-                }
-            },
-            "size": 1000
-        }
-
-        model_ids = set()
-        try:
-            resp = await opensearch.transport.perform_request('POST', '/_plugins/_ml/models/_search', body=body)
-            for item in resp['hits']['hits']:
-                doc = item.get('_source')
-                if doc:
-                    id = doc.get('model_id')
-                    if id:
-                        model_ids.add(id)
-        except:
-            # no current model
-            pass
-            
-        for model_id in model_ids:
-            resp=await opensearch.transport.perform_request('POST', '/_plugins/_ml/models/' + model_id + '/_undeploy')
-            resp=await opensearch.transport.perform_request('DELETE', '/_plugins/_ml/models/' + model_id)
-            
-    def __repr__(self, *args, **kwargs):
-        return "delete-ml-model"
-
-class RegisterMlModel(Runner):
-    @time_func
-    async def __call__(self, opensearch, params):
-        config_file = params.get('model_config_file')
-        if config_file:
-            with open(config_file, 'r') as f:
-                body = json.loads(f.read())
-        else:
-            body = {
-                "name": params.get('model_name'),
-                "version": params.get('model_version'),
-                "model_format": params.get('model_format')
-            }
-        search_body = {
-            "query": {
-                "match": {
-                    "name": body['name']
-                }
-            },
-            "size": 1000
-        }
-        model_id = None
-        try:
-            resp = await opensearch.transport.perform_request('POST', '/_plugins/_ml/models/_search', body=search_body)
-            for item in resp['hits']['hits']:
-                doc = item.get('_source')
-                if doc:
-                    model_id = doc.get('model_id')
-                    if model_id:
-                        break
-        except:
-            pass
-
-        if not model_id:
-            #print(json.dumps(body, indent=2))
-            resp = await opensearch.transport.perform_request('POST', '_plugins/_ml/models/_register', body=body)
-            task_id = resp.get('task_id')
-            timeout = 120
-            end = time.time() + timeout
-            state = 'CREATED'
-            while state == 'CREATED' and time.time() < end:
-                await asyncio.sleep(5)
-                resp = await opensearch.transport.perform_request('GET', '_plugins/_ml/tasks/' + task_id)
-                state = resp.get('state')
-            if state == 'FAILED':
-                #print(json.dumps(resp, indent=2))
-                raise BenchmarkError("Failed to register ml-model. Error: {}".format(resp['error']))
-            if state == 'CREATED':
-                raise BenchmarkError("Timeout when registering ml-model. Error: {}".format(resp['error']))
-            model_id = resp.get('model_id')
-
-        with open('model_id.json', 'w') as f:
-            d = { 'model_id': model_id }
-            f.write(json.dumps(d))
-                    
-    def __repr__(self, *args, **kwargs):
-        return "register-ml-model"
-
-
-class DeployMlModel(Runner):
-    @time_func
-    async def __call__(self, opensearch, params):
-        with open('model_id.json', 'r') as f:
-            d = json.loads(f.read())
-            model_id = d['model_id']
-
-        resp = await opensearch.transport.perform_request('POST', '_plugins/_ml/models/' + model_id + '/_deploy')
-        task_id = resp.get('task_id')
-        timeout = 120
-        end = time.time() + timeout
-        state = 'RUNNING'
-        while state == 'RUNNING' and time.time() < end:
-            await asyncio.sleep(5)
-            resp = await opensearch.transport.perform_request('GET', '_plugins/_ml/tasks/' + task_id)
-            state = resp.get('state')
-        if state == 'FAILED':
-            raise BenchmarkError("Failed to deploy ml-model. Error: {}".format(resp['error']))
-        if state == 'RUNNING':
-            raise BenchmarkError("Timeout when deploying ml-model. Error: {}".format(resp['error']))
-
-    def __repr__(self, *args, **kwargs):
-        return "deploy-ml-model"
 
 def ingest_pipeline_param_source(workload, params, **kwargs):
     model_id = params['body']['processors'][0]['text_embedding']['model_id']
@@ -168,10 +33,10 @@ class QueryParamSource:
         self._params = params
         self._params['index'] = index
         self._params['type'] = type
-        self._params['variable_queries'] = params.get("variable_queries", 0)
+        self._params['variable-queries'] = params.get("variable-queries", 0)
         self.infinite = True
 
-        if self._params['variable_queries'] > 0:
+        if self._params['variable-queries'] > 0:
             with open(script_dir + os.sep + 'workload_queries.json', 'r') as f:
                 d = json.loads(f.read())
                 source_file = d['source-file']
@@ -195,7 +60,7 @@ class QueryParamSource:
         with open('model_id.json', 'r') as f:
             d = json.loads(f.read())
             params['body']['query']['neural']['passage_embedding']['model_id'] = d['model_id']
-        count = self._params.get("variable_queries", 0)
+        count = self._params.get("variable-queries", 0)
         if count > 0:
             script_dir = os.path.dirname(os.path.realpath(__file__))
             with open(script_dir + '/queries.json', 'r') as f:
@@ -208,7 +73,3 @@ class QueryParamSource:
 def register(registry):
     registry.register_param_source("semantic-search-source", QueryParamSource)
     registry.register_param_source("create-ingest-pipeline", ingest_pipeline_param_source)
-    registry.register_runner("delete-ingest-pipeline", DeleteIngestPipeline(), async_runner=True)
-    registry.register_runner("delete-ml-model", DeleteMlModel(), async_runner=True)
-    registry.register_runner("register-ml-model", RegisterMlModel(), async_runner=True)
-    registry.register_runner("deploy-ml-model", DeployMlModel(), async_runner=True)

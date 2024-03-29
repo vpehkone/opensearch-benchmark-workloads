@@ -22,38 +22,28 @@
           }
         },
         {
-          "operation": {
-            "operation-type": "delete-index"
-          }
+          "operation": "delete-index"
         },
         {
-          "operation": {
-            "operation-type": "delete-ingest-pipeline",
-            "include-in-results_publishing": false
-          }
+          "operation": "delete-ingest-pipeline"
         },
         {
           "operation": {
             "operation-type": "delete-ml-model",
-            "model_name": "{{ model_name | default('huggingface/sentence-transformers/all-mpnet-base-v2')}}",
-            "include-in-results_publishing": false
+            "model-name": "{{ model_name | default('huggingface/sentence-transformers/all-mpnet-base-v2')}}"
           }
         },
         {
           "operation": {
             "operation-type": "register-ml-model",
-            "model_name": "{{ model_name | default('huggingface/sentence-transformers/all-mpnet-base-v2')}}",
-            "model_version": "{{ model_version | default('1.0.1') }}",
-            "model_format": "{{ model_format | default('TORCH_SCRIPT') }}",
-            "model_config_file": "{{ model_config_file | default('') }}",
-            "include-in-results_publishing": false
+            "model-name": "{{ model_name | default('huggingface/sentence-transformers/all-mpnet-base-v2')}}",
+            "model-version": "{{ model_version | default('1.0.1') }}",
+            "model-format": "{{ model_format | default('TORCH_SCRIPT') }}",
+            "model-config-file": "{{ model_config_file | default('') }}"
           }
         },
         {
-          "operation": {
-            "operation-type": "deploy-ml-model",
-            "include-in-results_publishing": false
-          }
+          "operation": "deploy-ml-model"
         },
         {
           "operation": "create-ingest-pipeline"
