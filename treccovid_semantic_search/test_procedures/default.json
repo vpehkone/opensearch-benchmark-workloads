@@ -1,5 +1,5 @@
     {
-      "name": "test-run-all-tasks",
+      "name": "index-merge-search",
       "description": "Indexes the corpus with vector embedding and then runs queries with vector embedding.",
       "default": true,
       "schedule": [
@@ -53,7 +53,7 @@
             "operation-type": "create-index",
             "settings": {%- if index_settings is defined %} {{index_settings | tojson}} {%- else %} {
               "index.refresh_interval": "5s",
-              "index.translog.flush_threshold_size": "512mb"
+              "index.translog.flush_threshold_size": "1g"
             }{%- endif %}
           }
         },
